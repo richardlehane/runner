@@ -15,8 +15,8 @@ type Job struct {
 }
 
 type Log struct {
-	Detail  string
-	Reports []Report
+	Detail  string   `json:"detail"`
+	Reports []Report `json:"reports"`
 }
 
 type Report struct {
