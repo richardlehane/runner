@@ -43,9 +43,11 @@ func main() {
 				Detail:   j.Detail,
 				Start:    st,
 				Duration: dur,
-				Output:   out.String(),
 				Err:      err,
 			})
+			if out != nil {
+				lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = out.String()
+			}
 			if j.URL != "" {
 				urls[j.LogKey] = j.URL
 			}
