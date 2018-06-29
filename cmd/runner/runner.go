@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_JOBS")
+	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL")
 	if auth == "" || url == "" {
 		log.Fatal("Must set RUNNER_AUTH and RUNNER_URL environment variables")
 	}
