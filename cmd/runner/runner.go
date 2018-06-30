@@ -15,11 +15,10 @@ import (
 )
 
 func main() {
-	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL")
-	if auth == "" || url == "" {
-		log.Fatal("Must set RUNNER_AUTH and RUNNER_URL environment variables")
+	user, pass, url := os.Getenv("RUNNER_USER"), os.Getenv("RUNNER_PASS"), os.Getenv("RUNNER_URL")
+	if user == "" || pass == "" || url == "" {
+		log.Fatal("Must set RUNNER_USER, RUNNER_PASS and RUNNER_URL environment variables")
 	}
-
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("Could not connect to runner jobs at %s, got: %v", url, err)
@@ -54,13 +53,13 @@ func main() {
 		}
 	}
 	for k, v := range lgs {
-		if err := post(auth, urls[k], runner.Log{Detail: k, Reports: v}); err != nil {
+		if err := post(user, pass, urls[k], runner.Log{Detail: k, Reports: v}); err != nil {
 			log.Print(err)
 		}
 	}
 }
 
-func post(auth, url string, content interface{}) error {
+func post(user, pass, url string, content interface{}) error {
 	body, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
@@ -71,7 +70,7 @@ func post(auth, url string, content interface{}) error {
 		return err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.SetBasicAuth("runner", auth)
+	req.SetBasicAuth(user, pass)
 	resp, err := client.Do(req)
 	byt, _ := ioutil.ReadAll(resp.Body)
 	log.Print(string(byt))
@@ -114,6 +113,19 @@ func execute(j runner.Job) (start time.Time, duration time.Duration, stdout *byt
 			stderr = "Error on first run: " + err.Error()
 			return
 		}
+	}
+	if j.Background != nil && len(j.Background.Cmd) > 0 {
+		var bargs []string
+		if len(j.Background.Cmd) > 1 {
+			bargs = j.Background.Cmd[1:]
+		}
+		bcmd := exec.Command(j.Background.Cmd[0], bargs...)
+		if err := bcmd.Start(); err != nil {
+			stderr = "Error starting background process: " + err.Error()
+			return
+		}
+		defer bcmd.Wait()
+		<-time.After(j.Background.Delay)
 	}
 	cmd := exec.Command(j.Cmd[0], args...)
 	cmd.Stdout = output

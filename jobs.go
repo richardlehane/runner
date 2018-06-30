@@ -5,13 +5,19 @@ import "time"
 type Jobs []Job
 
 type Job struct {
-	Detail   string   `json:"detail"`
-	Cmd      []string `json:"cmd,omitempty"`
-	RunTwice bool     `json:"runTwice"`
-	SendOut  bool     `json:"sendOut"`
-	LogKey   string   `json:"logKey,omitempty"`
-	URL      string   `json:"url,omitempty"`
-	Save     string   `json:"save,omitempty"`
+	Detail     string      `json:"detail"`
+	Cmd        []string    `json:"cmd,omitempty"`
+	Background *Background `json:"background,omitempty"`
+	RunTwice   bool        `json:"runTwice"`
+	SendOut    bool        `json:"sendOut"`
+	LogKey     string      `json:"logKey,omitempty"`
+	URL        string      `json:"url,omitempty"`
+	Save       string      `json:"save,omitempty"`
+}
+
+type Background struct {
+	Delay time.Duration `json:"delay"`
+	Cmd   []string      `json:"cmd"`
 }
 
 type Log struct {
