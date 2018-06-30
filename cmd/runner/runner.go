@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -15,9 +16,9 @@ import (
 )
 
 func main() {
-	user, pass, url := os.Getenv("RUNNER_USER"), os.Getenv("RUNNER_PASS"), os.Getenv("RUNNER_URL")
-	if user == "" || pass == "" || url == "" {
-		log.Fatal("Must set RUNNER_USER, RUNNER_PASS and RUNNER_URL environment variables")
+	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL")
+	if auth == "" || url == "" {
+		log.Fatal("Must set RUNNER_AUTH and RUNNER_URL environment variables")
 	}
 	resp, err := http.Get(url)
 	if err != nil {
@@ -45,7 +46,11 @@ func main() {
 				Err:      err,
 			})
 			if out != nil {
-				lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = out.String()
+				if j.Base64 {
+					lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = base64.StdEncoding.EncodeToString(out.Bytes())
+				} else {
+					lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = out.String()
+				}
 			}
 			if j.URL != "" {
 				urls[j.LogKey] = j.URL
@@ -53,13 +58,13 @@ func main() {
 		}
 	}
 	for k, v := range lgs {
-		if err := post(user, pass, urls[k], runner.Log{Detail: k, Reports: v}); err != nil {
+		if err := post(auth, urls[k], runner.Log{Detail: k, Reports: v}); err != nil {
 			log.Print(err)
 		}
 	}
 }
 
-func post(user, pass, url string, content interface{}) error {
+func post(auth, url string, content interface{}) error {
 	body, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
@@ -70,7 +75,7 @@ func post(user, pass, url string, content interface{}) error {
 		return err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.SetBasicAuth(user, pass)
+	req.SetBasicAuth("runner", auth)
 	resp, err := client.Do(req)
 	byt, _ := ioutil.ReadAll(resp.Body)
 	log.Print(string(byt))

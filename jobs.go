@@ -8,13 +8,15 @@ type Job struct {
 	Detail     string      `json:"detail"`
 	Cmd        []string    `json:"cmd,omitempty"`
 	Background *Background `json:"background,omitempty"`
-	RunTwice   bool        `json:"runTwice"`
-	SendOut    bool        `json:"sendOut"`
+	RunTwice   bool        `json:"runTwice,omitempty"`
+	SendOut    bool        `json:"sendOut,omitempty"`
+	Base64     bool        `json:"base64,omitempty"`
 	LogKey     string      `json:"logKey,omitempty"`
 	URL        string      `json:"url,omitempty"`
 	Save       string      `json:"save,omitempty"`
 }
 
+// Run this process in background, delaying by Delay before calling the main command
 type Background struct {
 	Delay time.Duration `json:"delay"`
 	Cmd   []string      `json:"cmd"`
