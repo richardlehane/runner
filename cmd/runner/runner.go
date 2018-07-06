@@ -35,6 +35,7 @@ func main() {
 	}
 	lgs := make(map[string][]runner.Report)
 	urls := make(map[string]string)
+	batch := time.Now()
 	for _, j := range jobs {
 		// execute each job and if it has a log key, then store its output for reporting
 		st, dur, out, err := execute(j)
@@ -58,7 +59,7 @@ func main() {
 		}
 	}
 	for k, v := range lgs {
-		if err := post(auth, urls[k], runner.Log{Detail: k, Reports: v}); err != nil {
+		if err := post(auth, urls[k], runner.Log{Detail: k, Batch: batch, Reports: v}); err != nil {
 			log.Print(err)
 		}
 	}

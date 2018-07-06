@@ -23,8 +23,9 @@ type Background struct {
 }
 
 type Log struct {
-	Detail  string   `json:"detail"`
-	Reports []Report `json:"reports"`
+	Detail  string    `json:"detail"`
+	Batch   time.Time `json:"batch"`
+	Reports []Report  `json:"reports"`
 }
 
 type Report struct {
