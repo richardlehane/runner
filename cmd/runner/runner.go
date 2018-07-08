@@ -59,7 +59,7 @@ func main() {
 		}
 	}
 	for k, v := range lgs {
-		if err := post(auth, urls[k], runner.Log{Detail: k, Batch: batch, Reports: v}); err != nil {
+		if err := post(auth, urls[k], runner.Log{Label: k, Batch: batch, Reports: v}); err != nil {
 			log.Print(err)
 		}
 	}
