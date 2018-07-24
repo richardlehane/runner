@@ -16,6 +16,13 @@ import (
 )
 
 func main() {
+	var (
+		jobs    runner.Jobs
+		lg      []runner.Report
+		lgkey   string
+		posturl string
+		batch   = time.Now()
+	)
 	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL")
 	if auth == "" || url == "" {
 		log.Fatal("Must set RUNNER_AUTH and RUNNER_URL environment variables")
@@ -29,18 +36,22 @@ func main() {
 		log.Fatalf("Error reading response body, got: %v", err)
 	}
 	resp.Body.Close()
-	var jobs runner.Jobs
 	if err := json.Unmarshal(body, &jobs); err != nil {
 		log.Fatalf("Error unmarshalling, got: %v", err)
 	}
-	lgs := make(map[string][]runner.Report)
-	urls := make(map[string]string)
-	batch := time.Now()
 	for _, j := range jobs {
+		// if log key is different, progressive post last jobs
+		if lg != nil && j.LogKey != "" && j.LogKey != lgkey {
+			if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Reports: lg}); err != nil {
+				log.Print(err)
+			}
+			lg = nil
+			lgkey = j.LogKey
+		}
 		// execute each job and if it has a log key, then store its output for reporting
 		st, dur, out, err := execute(j)
 		if j.LogKey != "" {
-			lgs[j.LogKey] = append(lgs[j.LogKey], runner.Report{
+			lg = append(lg, runner.Report{
 				Detail:   j.Detail,
 				Start:    st,
 				Duration: dur,
@@ -48,20 +59,21 @@ func main() {
 			})
 			if out != nil {
 				if j.Base64 {
-					lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = base64.StdEncoding.EncodeToString(out.Bytes())
+					lg[len(lg)-1].Output = base64.StdEncoding.EncodeToString(out.Bytes())
 				} else {
-					lgs[j.LogKey][len(lgs[j.LogKey])-1].Output = out.String()
+					lg[len(lg)-1].Output = out.String()
 				}
 			}
 			if j.URL != "" {
-				urls[j.LogKey] = j.URL
+				posturl = j.URL
 			}
 		}
 	}
-	for k, v := range lgs {
-		if err := post(auth, urls[k], runner.Log{Label: k, Batch: batch, Reports: v}); err != nil {
-			log.Print(err)
-		}
+	if lg == nil {
+		return
+	}
+	if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Reports: lg}); err != nil {
+		log.Print(err)
 	}
 }
 
