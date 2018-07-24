@@ -44,7 +44,7 @@ func main() {
 		if lgkey == "" {
 			lgkey = j.LogKey
 		} else if j.LogKey != "" && j.LogKey != lgkey {
-			if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Reports: lg}); err != nil {
+			if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Machine: mach, Reports: lg}); err != nil {
 				log.Print(err)
 			}
 			lg = nil
