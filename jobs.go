@@ -25,6 +25,7 @@ type Background struct {
 type Log struct {
 	Label   string    `json:"label"`
 	Batch   time.Time `json:"batch"`
+	Machine string    `json:"machine,omitempty"`
 	Reports []Report  `json:"reports"`
 }
 

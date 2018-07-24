@@ -23,7 +23,7 @@ func main() {
 		posturl string
 		batch   = time.Now()
 	)
-	auth, url := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL")
+	auth, url, mach := os.Getenv("RUNNER_AUTH"), os.Getenv("RUNNER_URL"), os.Getenv("RUNNER_MACH")
 	if auth == "" || url == "" {
 		log.Fatal("Must set RUNNER_AUTH and RUNNER_URL environment variables")
 	}
@@ -74,7 +74,7 @@ func main() {
 	if lg == nil {
 		return
 	}
-	if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Reports: lg}); err != nil {
+	if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Machine: mach, Reports: lg}); err != nil {
 		log.Print(err)
 	}
 }
