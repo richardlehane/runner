@@ -41,7 +41,9 @@ func main() {
 	}
 	for _, j := range jobs {
 		// if log key is different, progressive post last jobs
-		if lg != nil && j.LogKey != "" && j.LogKey != lgkey {
+		if lgkey == "" {
+			lgkey = j.LogKey
+		} else if j.LogKey != "" && j.LogKey != lgkey {
 			if err := post(auth, posturl, runner.Log{Label: lgkey, Batch: batch, Reports: lg}); err != nil {
 				log.Print(err)
 			}
