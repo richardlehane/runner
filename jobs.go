@@ -5,15 +5,16 @@ import "time"
 type Jobs []Job
 
 type Job struct {
-	Detail     string      `json:"detail"`
-	Cmd        []string    `json:"cmd,omitempty"`
-	Background *Background `json:"background,omitempty"`
-	RunTwice   bool        `json:"runTwice,omitempty"`
-	SendOut    bool        `json:"sendOut,omitempty"`
-	Base64     bool        `json:"base64,omitempty"`
-	LogKey     string      `json:"logKey,omitempty"`
-	URL        string      `json:"url,omitempty"`
-	Save       string      `json:"save,omitempty"`
+	Detail     string        `json:"detail"`
+	Cmd        []string      `json:"cmd,omitempty"`
+	Background *Background   `json:"background,omitempty"`
+	Timeout    time.Duration `json:"timeout,omitempty"`
+	RunTwice   bool          `json:"runTwice,omitempty"`
+	SendOut    bool          `json:"sendOut,omitempty"`
+	Base64     bool          `json:"base64,omitempty"`
+	LogKey     string        `json:"logKey,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	Save       string        `json:"save,omitempty"`
 }
 
 // Run this process in background, delaying by Delay before calling the main command

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -126,7 +127,14 @@ func execute(j runner.Job) (start time.Time, duration time.Duration, stdout *byt
 		output = ioutil.Discard
 	}
 	if j.RunTwice {
-		cmd := exec.Command(j.Cmd[0], args...)
+		var cmd *exec.Cmd
+		if j.Timeout > 0 {
+			ctx, cancel := context.WithTimeout(context.Background(), j.Timeout)
+			defer cancel()
+			cmd = exec.CommandContext(ctx, j.Cmd[0], args...)
+		} else {
+			cmd = exec.Command(j.Cmd[0], args...)
+		}
 		cmd.Stdout = ioutil.Discard
 		cmd.Stderr = ioutil.Discard
 		if err := cmd.Run(); err != nil {
@@ -147,7 +155,14 @@ func execute(j runner.Job) (start time.Time, duration time.Duration, stdout *byt
 		defer bcmd.Wait()
 		<-time.After(j.Background.Delay)
 	}
-	cmd := exec.Command(j.Cmd[0], args...)
+	var cmd *exec.Cmd
+	if j.Timeout > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), j.Timeout)
+		defer cancel()
+		cmd = exec.CommandContext(ctx, j.Cmd[0], args...)
+	} else {
+		cmd = exec.Command(j.Cmd[0], args...)
+	}
 	cmd.Stdout = output
 	cmd.Stderr = ebuf
 	start = time.Now()
